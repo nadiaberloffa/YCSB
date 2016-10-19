@@ -57,7 +57,7 @@ public class CassandraCQLClientTest {
   // Change the default Cassandra timeout from 10s to 120s for slow CI machines
   private final static long timeout = 120000L;
 
-  private final static String TABLE = "usertable";
+  private final static String TABLE = "userlog";
   private final static String HOST = "localhost";
   private final static int PORT = 9142;
   private final static String DEFAULT_ROW_KEY = "user1";
@@ -67,7 +67,7 @@ public class CassandraCQLClientTest {
 
   @ClassRule
   public static CassandraCQLUnit cassandraUnit = new CassandraCQLUnit(
-    new ClassPathCQLDataSet("ycsb.cql", "ycsb"), null, timeout);
+    new ClassPathCQLDataSet("tesi.cql", "tesi"), null, timeout);
 
   @Before
   public void setUp() throws Exception {
@@ -116,8 +116,8 @@ public class CassandraCQLClientTest {
     Insert insertStmt = QueryBuilder.insertInto(TABLE);
     insertStmt.value(CassandraCQLClient.YCSB_KEY, rowKey);
 
-    insertStmt.value("field0", "value1");
-    insertStmt.value("field1", "value2");
+    insertStmt.value("lat", "value1");
+    insertStmt.value("lon", "value2");
     session.execute(insertStmt);
   }
 
@@ -128,8 +128,8 @@ public class CassandraCQLClientTest {
     final HashMap<String, ByteIterator> result = new HashMap<String, ByteIterator>();
     final Status status = client.read(CoreWorkload.table, DEFAULT_ROW_KEY, null, result);
     assertThat(status, is(Status.OK));
-    assertThat(result.entrySet(), hasSize(11));
-    assertThat(result, hasEntry("field2", null));
+    assertThat(result.entrySet(), hasSize(Integer.parseInt(CoreWorkload.FIELD_COUNT_PROPERTY_DEFAULT)));
+    assertThat(result, hasEntry("zoom1", null));
 
     final HashMap<String, String> strResult = new HashMap<String, String>();
     for (final Map.Entry<String, ByteIterator> e : result.entrySet()) {
@@ -138,35 +138,35 @@ public class CassandraCQLClientTest {
       }
     }
     assertThat(strResult, hasEntry(CassandraCQLClient.YCSB_KEY, DEFAULT_ROW_KEY));
-    assertThat(strResult, hasEntry("field0", "value1"));
-    assertThat(strResult, hasEntry("field1", "value2"));
+    assertThat(strResult, hasEntry("lat", "value1"));
+    assertThat(strResult, hasEntry("lon", "value2"));
   }
 
   @Test
   public void testReadSingleColumn() throws Exception {
     insertRow();
     final HashMap<String, ByteIterator> result = new HashMap<String, ByteIterator>();
-    final Set<String> fields = Sets.newHashSet("field1");
+    final Set<String> fields = Sets.newHashSet("lon");
     final Status status = client.read(CoreWorkload.table, DEFAULT_ROW_KEY, fields, result);
     assertThat(status, is(Status.OK));
     assertThat(result.entrySet(), hasSize(1));
     final Map<String, String> strResult = StringByteIterator.getStringMap(result);
-    assertThat(strResult, hasEntry("field1", "value2"));
+    assertThat(strResult, hasEntry("lon", "value2"));
   }
 
   @Test
   public void testUpdate() throws Exception {
     final String key = "key";
     final HashMap<String, String> input = new HashMap<String, String>();
-    input.put("field0", "value1");
-    input.put("field1", "value2");
+    input.put("lat", "value1");
+    input.put("lon", "value2");
 
     final Status status = client.insert(TABLE, key, StringByteIterator.getByteIteratorMap(input));
     assertThat(status, is(Status.OK));
 
     // Verify result
     final Select selectStmt =
-        QueryBuilder.select("field0", "field1")
+        QueryBuilder.select("lat", "lon")
             .from(TABLE)
             .where(QueryBuilder.eq(CassandraCQLClient.YCSB_KEY, key))
             .limit(1);
@@ -175,7 +175,7 @@ public class CassandraCQLClientTest {
     final Row row = rs.one();
     assertThat(row, notNullValue());
     assertThat(rs.isExhausted(), is(true));
-    assertThat(row.getString("field0"), is("value1"));
-    assertThat(row.getString("field1"), is("value2"));
+    assertThat(row.getString("lat"), is("value1"));
+    assertThat(row.getString("lon"), is("value2"));
   }
 }

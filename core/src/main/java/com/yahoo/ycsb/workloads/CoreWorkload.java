@@ -90,7 +90,8 @@ public class CoreWorkload extends Workload {
   /**
    * The default name of the database table to run queries against.
    */
-  public static final String TABLENAME_PROPERTY_DEFAULT = "usertable";
+  //public static final String TABLENAME_PROPERTY_DEFAULT = "usertable";
+  public static final String TABLENAME_PROPERTY_DEFAULT = "userlog";
 
   public static String table;
 
@@ -103,7 +104,8 @@ public class CoreWorkload extends Workload {
   /**
    * Default number of fields in a record.
    */
-  public static final String FIELD_COUNT_PROPERTY_DEFAULT = "10";
+  //public static final String FIELD_COUNT_PROPERTY_DEFAULT = "10";
+  public static final String FIELD_COUNT_PROPERTY_DEFAULT = "14";
 
   int fieldcount;
 
